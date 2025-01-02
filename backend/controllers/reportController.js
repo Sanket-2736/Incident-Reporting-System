@@ -63,7 +63,11 @@ exports.getReportById = async (req, res) => {
         if (!report) {
             return res.status(404).json({ message: 'Report not found' });
         }
-        res.json(report);
+        res.json({
+            success: true,
+            message: "Report fetched!",
+            data: report
+        });
     } catch (error) {
         console.error('Error fetching report:', error); // Log error for debugging
         res.status(500).json({ message: 'Error fetching report', error });
@@ -79,13 +83,13 @@ exports.updateReport = async (req, res) => {
         const updatedReport = await Report.findByIdAndUpdate(reportId, updatedData, { new: true });
 
         if (!updatedReport) {
-            return res.status(404).json({ message: 'Report not found.' });
+            return res.status(404).json({ success:false, message: 'Report not found.' });
         }
 
-        res.status(200).json(updatedReport);
+        res.status(200).json({success: true, message: "Report updated", report : updatedReport});
     } catch (error) {
         console.error('Error updating report:', error); // Log error for debugging
-        res.status(500).json({ message: 'Error updating report', error });
+        res.status(500).json({ success:false, message: 'Error updating report', error });
     }
 };
 
@@ -96,7 +100,7 @@ exports.solveCase = async (req, res) => {
 
     // Validate input
     if (!status || !responseMessage) {
-        return res.status(400).json({ message: 'Status and response message are required.' });
+        return res.status(400).json({ success:false, message: 'Status and response message are required.' });
     }
 
     try {
@@ -107,13 +111,13 @@ exports.solveCase = async (req, res) => {
         );
 
         if (!updatedReport) {
-            return res.status(404).json({ message: 'Report not found' });
+            return res.status(404).json({ success:false, message: 'Report not found' });
         }
 
-        res.status(200).json(updatedReport);
+        res.status(200).json({success: true, message: "Case solved!", report : updatedReport});
     } catch (error) {
         console.error('Error updating report:', error); // Log error for debugging
-        res.status(500).json({ message: 'Error updating report', error });
+        res.status(500).json({ success:false, message: 'Error updating report', error });
     }
 };
 
@@ -124,7 +128,7 @@ exports.createAdminReport = async (req, res) => {
 
         // Validate required fields
         if (!title || !description || !location) {
-            return res.status(400).json({ message: 'Title, description, and location are required.' });
+            return res.status(400).json({ success:false, message: 'Title, description, and location are required.' });
         }
 
         const newReport = new Report({
@@ -137,9 +141,9 @@ exports.createAdminReport = async (req, res) => {
         });
 
         await newReport.save();
-        res.status(201).json(newReport);
+        res.status(201).json({success: true, message : "Report created!", report: newReport});
     } catch (error) {
         console.error('Error creating admin report:', error); // Log error for debugging
-        res.status(500).json({ message: 'Error creating admin report', error });
+        res.status(500).json({ success:false, message: 'Error creating admin report', error });
     }
 };

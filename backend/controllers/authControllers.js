@@ -84,4 +84,24 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { signup, login };
+const getUserByUsername = async (req, res) => {
+    try {
+        const username = req.params.username; // Get the username from the route parameters
+        const user = await User.findOne({ username }); // Fetch the user from the database
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({
+            success : true,
+            user : user,
+            message: "User info fetched"
+        }); // Return the user data
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
+module.exports = { signup, login, getUserByUsername };

@@ -21,10 +21,13 @@ const createIncident = async (req, res) => {
 
         // Save the incident to the database
         const savedIncident = await newIncident.save();
-        res.status(201).json(savedIncident);
+        res.status(201).json({success: true,
+            message: 'Incident created successfully',
+            incident: savedIncident
+        });
     } catch (error) {
         console.error('Error creating incident:', error);
-        res.status(500).json({ error: 'Failed to create incident' });
+        res.status(500).json({ success:false, error: 'Failed to create incident' });
     }
 };
 
@@ -32,10 +35,10 @@ const createIncident = async (req, res) => {
 const getIncidents = async (req, res) => {
     try {
         const incidents = await Incident.find();
-        res.status(200).json(incidents);
+        res.status(200).json({success: true, message: "All incident fetched!", incident: incidents});
     } catch (error) {
         console.error('Error fetching incidents:', error);
-        res.status(500).json({ error: 'Failed to fetch incidents' });
+        res.status(500).json({ success:false, error: 'Failed to fetch incidents' });
     }
 };
 
