@@ -19,37 +19,51 @@ exports.createReport = [
     upload.single('image'), // Middleware for handling image upload
     async (req, res) => {
         try {
-            const { title, description, location } = req.body;
+            const { title, description, location, statusUpdate, incident } = req.body;
 
             // Validate required fields
-            if (!title || !description || !location) {
-                return res.status(400).json({ message: 'Title, description, and location are required.' });
+            if (!title || !description || !location || !statusUpdate || !incident) {
+                return res.status(400).json({ message: 'Title, description, location, statusUpdate, and incident are required.', success: false });
+            }
+
+            if (!req.user || !req.user._id) {
+                console.error('User is not authenticated or user ID is missing.');
+                return res.status(401).json({ message: 'User not authenticated', success: false });
             }
 
             const image = req.file ? req.file.path : null; // Get the image path if uploaded
 
             const newReport = new Report({
-                title,
+                incident: incident, // Ensure the incident ID is provided
+                createdBy: req.user._id, // Set the creator of the report to the authenticated user
                 description,
-                location,
-                image,
-                user: req.user._id, // Assuming user ID is available in req.user
+                statusUpdate, // Include the status update
+                findings: null, // Optional field, set to null if not provided
+                resolution: null, // Optional field, set to null if not provided
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
             });
 
             const savedReport = await newReport.save();
-            res.status(201).json(savedReport);
+            res.status(201).json({
+                message: 'Report created successfully.',
+                data: savedReport,
+                success: true
+            });
         } catch (error) {
             console.error('Error creating report:', error); // Log error for debugging
-            res.status(500).json({ message: 'Error creating report', error });
+            res.status(500).json({ message: 'Error creating report', success: false });
         }
     }
 ];
+
+
 
 // Function to get all reports
 exports.getReports = async (req, res) => {
     try {
         const reports = await Report.find(); // Fetch all reports from the database
-        res.status(200).json(reports); // Send the reports back as a JSON response
+        res.status(200).json({ success: true, data: reports }); // Send the reports back as a JSON response
     } catch (error) {
         console.error('Error fetching reports:', error); // Log error for debugging
         res.status(500).json({ message: 'Error fetching reports', error });
@@ -61,13 +75,9 @@ exports.getReportById = async (req, res) => {
     try {
         const report = await Report.findById(req.params.id); // Find report by ID
         if (!report) {
-            return res.status(404).json({ message: 'Report not found' });
+            return res.status(404).json({ success: false, message: 'Report not found' });
         }
-        res.json({
-            success: true,
-            message: "Report fetched!",
-            data: report
-        });
+        res.json({ success: true, message: "Report fetched!", data: report });
     } catch (error) {
         console.error('Error fetching report:', error); // Log error for debugging
         res.status(500).json({ message: 'Error fetching report', error });
@@ -83,13 +93,13 @@ exports.updateReport = async (req, res) => {
         const updatedReport = await Report.findByIdAndUpdate(reportId, updatedData, { new: true });
 
         if (!updatedReport) {
-            return res.status(404).json({ success:false, message: 'Report not found.' });
+            return res.status(404).json({ success: false, message: 'Report not found.' });
         }
 
-        res.status(200).json({success: true, message: "Report updated", report : updatedReport});
+        res.status(200).json({ success: true, message: "Report updated", report: updatedReport });
     } catch (error) {
         console.error('Error updating report:', error); // Log error for debugging
-        res.status(500).json({ success:false, message: 'Error updating report', error });
+        res.status(500).json({ success: false, message: 'Error updating report', error });
     }
 };
 
@@ -100,7 +110,7 @@ exports.solveCase = async (req, res) => {
 
     // Validate input
     if (!status || !responseMessage) {
-        return res.status(400).json({ success:false, message: 'Status and response message are required.' });
+        return res.status(400).json({ success: false, message: 'Status and response message are required.' });
     }
 
     try {
@@ -111,13 +121,13 @@ exports.solveCase = async (req, res) => {
         );
 
         if (!updatedReport) {
-            return res.status(404).json({ success:false, message: 'Report not found' });
+            return res.status(404).json({ success: false, message: 'Report not found' });
         }
 
-        res.status(200).json({success: true, message: "Case solved!", report : updatedReport});
+        res.status(200).json({ success: true, message: "Case solved!", report: updatedReport });
     } catch (error) {
         console.error('Error updating report:', error); // Log error for debugging
-        res.status(500).json({ success:false, message: 'Error updating report', error });
+        res.status(500).json({ success: false, message: 'Error updating report', error });
     }
 };
 
@@ -128,7 +138,7 @@ exports.createAdminReport = async (req, res) => {
 
         // Validate required fields
         if (!title || !description || !location) {
-            return res.status(400).json({ success:false, message: 'Title, description, and location are required.' });
+            return res.status(400).json({ success: false, message: 'Title, description, and location are required.' });
         }
 
         const newReport = new Report({
@@ -140,10 +150,10 @@ exports.createAdminReport = async (req, res) => {
             status: 'Pending', // Default status for new reports
         });
 
-        await newReport.save();
-        res.status(201).json({success: true, message : "Report created!", report: newReport});
+        const savedReport = await newReport.save();
+        res.status(201).json({ success: true, message: "Report created!", report: savedReport });
     } catch (error) {
         console.error('Error creating admin report:', error); // Log error for debugging
-        res.status(500).json({ success:false, message: 'Error creating admin report', error });
+        res.status(500).json({ success: false, message: 'Error creating admin report', error });
     }
 };

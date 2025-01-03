@@ -1,12 +1,12 @@
-// routes/reportRoutes.js
 const express = require('express');
 const router = express.Router();
-const { createReport, updateReport } = require('../controllers/reportController'); // Adjust the path as necessary
-
-// Route for creating a new report
-router.post('/reports', createReport); // POST request to create a new report
-
-// Route for updating an existing report
-router.post('/reports/update/:id', updateReport); // Change from PUT to POST for updating a report
+const reportController = require('../controllers/reportController'); // Adjust the path as necessary
+const {protect} = require('../middlewares/authMiddleware')
+const responderMiddleware = require('../middlewares/responderMiddleware')
+// Define your routes
+router.post('/report', protect, responderMiddleware, reportController.createReport); // Ensure createReport is defined and imported
+router.get('/get-reports',protect, reportController.getReports);
+router.get('/get-report-by-id/:id', reportController.getReportById);
+router.post('/update/:id', protect, responderMiddleware, reportController.updateReport);
 
 module.exports = router;

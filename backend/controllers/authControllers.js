@@ -5,9 +5,9 @@ const bcrypt = require('bcrypt');
 // Signup function
 const signup = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body; // Updated to match user model fields
+        const { username, firstName, lastName, email, password, role, phone } = req.body; // Updated to match user model fields
 
-        const userExists = await userModel.findOne({ $or: [{ email }] }); // Only check email since username is not in user schema
+        const userExists = await userModel.findOne({ $or: [{ email }, { username }] }); // Check for existing email or username
         if (userExists) {
             return res.json({ success: false, message: 'User with the credentials already exists.' });
         }
@@ -16,10 +16,13 @@ const signup = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const newUser = new userModel({
-            name,
+            username,
+            firstName,
+            lastName,
             email,
             password: hashedPassword,
             role: role || 'user', // Default to 'user' if role is not provided
+            phone, // Include phone number
         });
         await newUser.save();
 
@@ -33,7 +36,9 @@ const signup = async (req, res) => {
             success: true,
             message: 'Signup successful!',
             token: jwtToken,
-            name: newUser.name,
+            username: newUser.username, // Include username
+            firstName: newUser.firstName, // Include first name
+            lastName: newUser.lastName, // Include last name
             role: newUser.role,
             email: newUser.email,
             isActive: newUser.isActive, // Optional: include isActive if needed
@@ -47,12 +52,22 @@ const signup = async (req, res) => {
 // Login function
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body; // Updated to use email for login
+        const { email, password } = req.body;
 
         // Find the user by email
         const user = await userModel.findOne({ email });
         if (!user) {
             return res.json({ success: false, message: 'User not found.' });
+        }
+
+        // Debug logs to check the user object and password
+        console.log('Retrieved user:', user);
+        console.log('Provided password:', password);
+        console.log('Stored hashed password:', user.password);
+
+        // Ensure password is provided
+        if (!password) {
+            return res.json({ success: false, message: 'Password is required.' });
         }
 
         // Check if the password is correct
@@ -61,22 +76,23 @@ const login = async (req, res) => {
             return res.json({ success: false, message: 'Invalid password.' });
         }
 
-        // Generate JWT token using user details
+        // Generate JWT token
         const jwtToken = jwt.sign(
             { _id: user._id, role: user.role, email: user.email },
             process.env.SECRET_KEY,
             { expiresIn: '12h' }
         );
 
-        // Return success response
         return res.json({
             success: true,
             message: 'Login successful!',
             token: jwtToken,
-            name: user.name, // Include user's name
+            username: user.username, // Update based on user model
+            firstName: user.firstName,
+            lastName: user.lastName,
             role: user.role,
             email: user.email,
-            isActive: user.isActive, // Optional: include isActive if needed
+            isActive: user.isActive,
         });
     } catch (error) {
         console.error(error);
@@ -84,24 +100,36 @@ const login = async (req, res) => {
     }
 };
 
+
+
+// Get user by username
 const getUserByUsername = async (req, res) => {
     try {
         const username = req.params.username; // Get the username from the route parameters
-        const user = await User.findOne({ username }); // Fetch the user from the database
+        const user = await userModel.findOne({ username }); // Fetch the user from the database
         
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
 
         res.status(200).json({
-            success : true,
-            user : user,
+            success: true,
+            user: {
+                username: user.username,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role,
+                phone: user.phone,
+                isActive: user.isActive,
+                dateJoined: user.dateJoined,
+                lastLogin: user.lastLogin,
+            },
             message: "User info fetched"
         }); // Return the user data
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
-
 
 module.exports = { signup, login, getUserByUsername };

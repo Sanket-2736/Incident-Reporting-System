@@ -1,9 +1,8 @@
 const responderMiddleware = (req, res, next) => {
     if (!req.user || req.user.role !== 'responder') {
-      return res.status(403).json({ message: 'Access denied' });
+      return res.status(403).json({ success:false, message: 'Access denied' });
     }
     next();
   };
   
-  module.exports = responderMiddleware;
-  
+module.exports = responderMiddleware;  

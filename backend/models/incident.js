@@ -1,45 +1,12 @@
-const Incident = require('../models/incident'); // Make sure this path is correct
+const mongoose = require('mongoose');
 
-// Create a new incident
-const createIncident = async (req, res) => {
-    try {
-        const { title, description, category, location, reporter, attachments } = req.body;
+const incidentSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    category: { type: String, required: true },
+    location: { type: String, required: true },
+    reporter: { type: String, required: true },
+    attachments: [String],
+});
 
-        const newIncident = new Incident({
-            title,
-            description,
-            category,
-            location,
-            reporter,
-            attachments,
-        });
-
-        await newIncident.save();
-
-        return res.status(201).json({
-            success: true,
-            message: 'Incident created successfully!',
-            incident: newIncident,
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ success: false, message: 'An error occurred while creating the incident.' });
-    }
-};
-
-// Get all incidents
-const getIncidents = async (req, res) => {
-    try {
-        const incidents = await Incident.find().populate('reporter', 'name email'); // Populate reporter details
-
-        return res.status(200).json({
-            success: true,
-            incidents,
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ success: false, message: 'An error occurred while fetching incidents.' });
-    }
-};
-
-module.exports = { createIncident, getIncidents };
+module.exports = mongoose.model('Incident', incidentSchema);
