@@ -100,8 +100,6 @@ const login = async (req, res) => {
     }
 };
 
-
-
 // Get user by username
 const getUserByUsername = async (req, res) => {
     try {

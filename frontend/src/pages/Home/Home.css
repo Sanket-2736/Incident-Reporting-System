@@ -1,0 +1,32 @@
+/* General styling for spacing and responsiveness */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .hero {
+    background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .testimonial-card:hover {
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.3s ease-in-out;
+  }
+  
+  .footer {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  }
+  
+  .footer i {
+    cursor: pointer;
+  }
+  
+  .footer i:hover {
+    color: #fff;
+  }
+  

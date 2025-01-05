@@ -6,6 +6,11 @@ const incidentSchema = new mongoose.Schema({
     category: { type: String, required: true },
     location: { type: String, required: true },
     reporter: { type: String, required: true },
+    statusUpdate: {
+        type: String,
+        enum: ['Pending', 'In Progress', 'Resolved', 'Rejected'], // Matches Incident status
+        default: "Pending"
+    },
     attachments: [String],
 });
 

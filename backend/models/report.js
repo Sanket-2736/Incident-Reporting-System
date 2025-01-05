@@ -5,12 +5,12 @@ const mongoose = require('mongoose');
 const reportSchema = new mongoose.Schema({
   incident: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Incident', // Links to the Incident model
+    ref: 'Incident',
     required: true,
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Links to the User model (admin creating the report)
+    ref: 'User', 
     required: true,
   },
   description: {
@@ -30,6 +30,7 @@ const reportSchema = new mongoose.Schema({
     type: String,
     enum: ['Pending', 'In Progress', 'Resolved', 'Rejected'], // Matches Incident status
     required: true,
+    default: "Pending"
   },
   createdAt: {
     type: Date,

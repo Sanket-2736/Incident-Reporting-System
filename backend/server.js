@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./config/db'); // Import MongoDB connection function
 const mongoose = require('mongoose');
+const multer = require('multer')
 
 // Initialize Express app
 const app = express();
@@ -15,6 +16,12 @@ connectDB();
 app.use(cors()); // Enable CORS
 app.use(bodyParser.json()); // Parse JSON bodies
 app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const upload = multer();
+app.use(upload.array('attachments'));
 
 // Middleware for serving static files
 app.use('/uploads', express.static('uploads')); // Serve uploaded images
